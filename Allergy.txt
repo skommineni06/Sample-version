@@ -1,0 +1,62 @@
+select distinct top 10 
+CAST(HASHBYTES('MD5', CONCAT (CA.OrganizationID ,CA.CenterID ,'Athena' ,CAST(CA.AllergyID AS VARCHAR(255)) )) AS BINARY (55)) AS DiagnosisBusinessKey ,
+CAST(CONCAT (CA.OrganizationID ,'.' ,CA.CenterID ,'.' ,'Athena' ,'.' ,CAST(CA.AllergyID  AS VARCHAR(255)))  AS NVARCHAR(613)) AS DiagnosisNaturalBusinessKey ,
+CAST(CA.ContextID AS varchar(255)) as ContextID, 
+CAST(CA.OrganizationID AS Varchar(255))as NetworkID, 
+CAST(CA.CenterID AS varchar(255)) as CenterID, 
+CAST('Athena' as VARCHAR(255))as SourceSystemID, 
+CAST(CA.AllergyID AS VARCHAR(255)) as AllergyId,
+CAST(CA.AllergyNM AS VARCHAR(255)) as SrcAllergyNM,
+--CAST(APP.PatientBusineeKey AS Binary(55)) as PatientBusinessKey,
+--CAST(APP.PatientNaturalBusinessKey AS Varchar(255)) as PatientNaturalBusinessKey,
+CAST(Null as binary(55) ) as SigningProviderBusinessKey,
+CAST(Null as varchar(255) ) as SigningProviderNaturalBusinessKey, 
+CAST(CA.AllergyNM as varchar(255)) as AllergyNM, 
+CASE WHEN CA.DeactivatedDTS is not null THEN 'Deactive' ELSE 'ACTIVE' END as SrcAllergyStatusCD,
+CASE WHEN CA.DeactivatedDTS is not null THEN 'Deactive' ELSE 'ACTIVE' END as SrcAllergyStatusNM,
+--CAST(CASE
+   --  when CA.RXnormCD is not null then 'RXCUI' 
+    --  when CA.NDC is not null then 'NDC' 
+     -- when CA.Snomed is not null then 'snomed' as varchar(255)) end as CodeSystemNM ,---Need to check with AMRO because there is no column such column present in the table
+--CAST(Coaleacse CA.RxNormCD )as varchar(255)) as CodeSystemCD,-----Need to do coaslsce to input the one
+CAST(Null as varchar(255) ) as CodeSystemValue,
+CAST(Null as varchar(255) ) as ClassTypeAllergyCD, 
+CAST(CA.NoteTXT as Varchar(255)) as AllergyReactionDSC,
+--CAST(Coaleacse CA.OnsetDTS and CA.CreatedDTS as datetime2 ) as AllergyStartDTS
+CAST(CA.DeactivatedDTS as Datetime2) AllergyStopDTS  , 
+CAST(CA.CreatedDTS as datetime2) as  SignedDTS,
+Cast (PA.CriticalityCD  as Varchar(255)) as CriticalityCD,
+CAST(Null as varchar(255) ) as SrcCodeSystemNM1,
+CAST(CM.MedicationID  as varchar(255))as SrcMedicationCD1,
+CAST(Null as varchar(255) ) as SrcCodeSystemNM2,
+CAST(Null as varchar(255) ) as SrcMedicationCD2,
+CAST(Null as varchar(255) ) as DrugDescriptorID,
+CAST(CM.MedicationNM as varchar(255))as SrcMedicationNM,
+CAST(CA.RxNormCD as varchar(255)) as MedicationRXCUIID,
+CAST(CM.MedicationNM as varchar(1000)) as MedicationRxNormDSC,
+Cast (CM.NDC as varchar(255)) as SrcNDCCD,
+Cast(CM.MedicationNM as varchar(255)) as NDCDSC,
+Case when CA.DeletedDTS IS NOT NULL THEN 'Y' ELSE 'N' end as VoidedFLG,
+CAST(Null as datetime2 ) as LastUpdatedInSourceSystemDTS,
+CAST(Null as datetime2 ) as LastUpdatedInSourceMartDTS,
+CAST(Null as datetime2 ) as LastUpdatedInSAMDTS
+From 
+AthenaHI.Clinical.Allergy CA
+Inner Join [AthenaHI].[Clinical].[Medication] CM on CA.CenterID=CM.CenterID and CA.OrganizationID=CM.OrganizationID    --where   CA.AllergyTypeCD = 'PATIENTALLERGY'
+Inner Join AthenaHI.Patient.Allergy PA on PA.AllergyID=CA.AllergyID and PA.CenterID=CA.CenterID and PA.OrganizationID=CA.OrganizationID
+--Left Join ACRES.ALLPatientUnmasked APU on APU.Patient_id = CA.PatientID and APU.CenterID=CA.CenterID and APU.OrganizationID=CA.OrganizationID 
+where AllergyTypeCD = 'PATIENTALLERGY'
+
+
+
+select top 2 * from AthenaHI.Clinical.Allergy  where AllergyTypeCD='PatientAllergy'
+select top 2 * from AthenaHI.Clinical.Medication
+
+CAST(CASE
+when RXnormCD is not null then 'RXCUI' 
+when NDC is not null then 'NDC' 
+when Snomed is not null then 'snomed'
+ENd 
+
+
+
